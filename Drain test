@@ -1,0 +1,18 @@
+void Drain1()
+{	
+for(int i=0; i<2; i++) 
+{
+ for(int j=0; j<tPixels; j++)
+     {
+RFstrip.setPixelColor(i, RFstrip.Color(r,g,b));
+RFstrip.setPixelColor(i-1, RFstrip.Color(r,g,(b-150)));
+RFstrip.setPixelColor(i-2, RFstrip.Color(r,g,(b-200)));
+RFstrip.setPixelColor(i-3, RFstrip.Color(r,g,(b-250))); // add more of these lines to make the trail longer
+RFstrip.show();
+delay(wait);  
+ }
+
+r = g = b = 0;
+}
+  
+}
