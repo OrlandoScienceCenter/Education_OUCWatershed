@@ -10,16 +10,16 @@
 
 
 //Defines for NeoPixel Strips
-//Don't use pin 10. Doesnt work for whatever reason.
+//Don't use pin 10. Doesnt work for whatever reason. Also pin 4. also foobar. 
 //Expansion board 0 "drains"
 Adafruit_NeoPixel rainDrain    = Adafruit_NeoPixel(5, 12, NEO_GRB + NEO_KHZ800);    // Rain to Florida Aquifer pipe on pin 12
 Adafruit_NeoPixel surfaceDrain = Adafruit_NeoPixel(5, 11, NEO_GRB + NEO_KHZ800);    // Surface Water to florida aquifer on pin 11
-Adafruit_NeoPixel aquiDrain = Adafruit_NeoPixel(5, 9, NEO_GRB + NEO_KHZ800);        // Aquifer Drain on pin 9
+Adafruit_NeoPixel aquiDrain    = Adafruit_NeoPixel(5, 9, NEO_GRB + NEO_KHZ800);        // Aquifer Drain on pin 9
 //Expansion board 1 "drains"
 Adafruit_NeoPixel oceanDrain   = Adafruit_NeoPixel(5, 8, NEO_GRB + NEO_KHZ800);     //
 Adafruit_NeoPixel desalDrain   = Adafruit_NeoPixel(5, 7, NEO_GRB + NEO_KHZ800);     // 
 Adafruit_NeoPixel recDrain     = Adafruit_NeoPixel(5, 6, NEO_GRB + NEO_KHZ800);     //
-//Bottom Drain Level
+//Expansion board 2 "drains"
 Adafruit_NeoPixel agroDrain    = Adafruit_NeoPixel(5, 5, NEO_GRB + NEO_KHZ800);     // 
 Adafruit_NeoPixel homeDrain    = Adafruit_NeoPixel(5, 4, NEO_GRB + NEO_KHZ800);     // 
 Adafruit_NeoPixel indDrain     = Adafruit_NeoPixel(5, 13, NEO_GRB + NEO_KHZ800);    // 
@@ -155,7 +155,7 @@ if (hold == false){
       break;
       //
    case 7:
-      drainOUC (0, 0, 255 , 100, 5); // Drain OUC and Animate last pipes - filling final boxes
+      drainOUC (0, 0, 255 , 100, 5); // Drain OUC and Animate last pipes - filling final boxes set length to longest?
       hold = true;
       Serial.println("OUC Drained, Pipes animated, Lower Boxes Filled");
       break;
@@ -177,12 +177,11 @@ if (hold == false){
       break;
       //
    case 12:
-      //Payoff?
+     finale ();      // This goes to the last function, that turns EVERYTHING on, and sets the tubes a drippin. 
       break;
       // 
   default:
-      //payoff?
-      //party!
+      alloff();
      delay (100);
     }
 }
@@ -226,13 +225,53 @@ void fillOceans (int wait){
     expBoard1.digitalWrite(10, HIGH);
 }
 
-void blinkAgro (int wait){};
+void blinkAgro (int wait){
+  boolean state = LOW;
+  //
+  for (int i = 0; i < 6; i++){
+    expBoard1.digitalWrite(8, state);       // blink for the agro box here - MCP 2
+    expBoard1.digitalWrite(9, state);    
+    expBoard1.digitalWrite(10, state);
+    state =   !state;
+    delay(wait);
+    }
+  }
 
-void blinkRec (int wait){};
+void blinkRec (int wait){;
+  boolean state = LOW;
+  //
+  for (int i = 0; i < 6; i++){
+    expBoard1.digitalWrite(11, state);       // blink for the agro box here - MCP 2
+    expBoard1.digitalWrite(12, state);    
+    expBoard1.digitalWrite(13, state);
+    state =   !state;
+    delay(wait);
+    }
+ } 
+ 
+void blinkIndustry (int wait){  
+  boolean state = LOW;
+  //
+  for (int i = 0; i < 6; i++){
+    expBoard1.digitalWrite(14, state);       // blink for the agro box here - MCP 2
+    expBoard1.digitalWrite(15, state);    
+    expBoard1.digitalWrite(7, state);
+    state =   !state;
+    delay(wait);
+    }
+  }
 
-void blinkIndustry (int wait){};
-
-void blinkHome (int wait){};
+void blinkHome (int wait){
+  boolean state = LOW;
+  //
+  for (int i = 0; i < 4; i++){
+    digitalWrite(A0, state);       // blink for the agro box here - MCP 2
+    digitalWrite(A1, state);    
+    digitalWrite(A2, state);
+    state =   !state;
+    delay(wait);
+    }
+  }  
 
 
 
@@ -300,9 +339,8 @@ void drainOceans(int r, int g, int b, int wait, int nPixels) {
   int i;                                                              // pixel location, starting with 0  
   int n;                                                              // program cycle number       
   //
- for (int cycle = 0; cycle < 3; cycle++){
-   // Write code here to "fill" the Desal tank and Drain the oceans
-    for (n = 0; n < 2; n++){                                              
+ for (int cycle = 0; cycle < 3; cycle++){                          // Run the whole cycle 3 times
+    for (n = 0; n < 2; n++){                                       // Run the animation of the dripping twice on each cycle       
       for(i = 0; i <= nPixels; i++) {                              //Progresses the light down the strip, with a 3 segment trail
         oceanDrain.setPixelColor(i, oceanDrain.Color(r,g,b));         //Primary light/pixel
         oceanDrain.setPixelColor(i-1, oceanDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
@@ -465,9 +503,53 @@ void drainOUC(int r, int g, int b, int wait, int nPixels) {
       delay(wait);
     }
   }
+ 
+     Serial.println(cycle);
+        expBoard1.digitalWrite(8 + (cycle), HIGH);     // fill for the agro box here - MCP 2
+        expBoard1.digitalWrite(11 + (cycle), HIGH);    // fill for the home box here - MCP 2
+       switch(cycle){                                  // monitor the cycle and turn on the appropraite lights to the industrial and Recreational tank. Out of order because of my poor hardware planning...
+         case 0:
+           expBoard2.digitalWrite(14, HIGH);           // Bottom Row of industrial tank
+           digitalWrite(A0, HIGH);                     // recreational tank
+           Serial.println("case0");
+           break;
+         case 1:
+           expBoard2.digitalWrite(15, HIGH);           //Middle Row industrial tank
+           digitalWrite (A1, HIGH);                    // recreational tank
+           break;
+         case 2:
+           expBoard2.digitalWrite(7, HIGH);            //Top Row industrial tank
+           digitalWrite (A2, HIGH);                    // recreational tank
+       }
+  
+  
  }
-} 
+}
+void finale() {
+  // Turn on all the tank lights
+  for(int i = 0; i < 9; i++){ 
+    expBoard0.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 0
+  }
+  for(int i = 0; i < 9; i++){ 
+    expBoard1.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 1
+  }
+    for(int i = 0; i < 9; i++){ 
+    expBoard2.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 2
+  }
+ }
 
+void alloff (){
+  // Turn off all the tank lights
+  for(int i = 0; i < 9; i++){ 
+    expBoard0.digitalWrite(7 + i,  LOW); // Turn on all tank lights from expander board 0
+  }
+  for(int i = 0; i < 9; i++){ 
+    expBoard1.digitalWrite(7 + i,  LOW); // Turn on all tank lights from expander board 1
+  }
+    for(int i = 0; i < 9; i++){ 
+    expBoard2.digitalWrite(7 + i,  LOW); // Turn on all tank lights from expander board 2
+  }
+ }
 
 
 //EOF
