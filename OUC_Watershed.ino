@@ -14,15 +14,15 @@
 //Expansion board 0 "drains"
 Adafruit_NeoPixel rainDrain    = Adafruit_NeoPixel(5, 12, NEO_GRB + NEO_KHZ800);    // Rain to Florida Aquifer pipe on pin 12
 Adafruit_NeoPixel surfaceDrain = Adafruit_NeoPixel(5, 11, NEO_GRB + NEO_KHZ800);    // Surface Water to florida aquifer on pin 11
-Adafruit_NeoPixel aquiDrain    = Adafruit_NeoPixel(5, 9, NEO_GRB + NEO_KHZ800);        // Aquifer Drain on pin 9
+Adafruit_NeoPixel aquiDrain    = Adafruit_NeoPixel(7, 9, NEO_GRB + NEO_KHZ800);        // Aquifer Drain on pin 9
 //Expansion board 1 "drains"
 Adafruit_NeoPixel oceanDrain   = Adafruit_NeoPixel(5, 8, NEO_GRB + NEO_KHZ800);     //
-Adafruit_NeoPixel desalDrain   = Adafruit_NeoPixel(5, 7, NEO_GRB + NEO_KHZ800);     // 
-Adafruit_NeoPixel recDrain     = Adafruit_NeoPixel(5, 6, NEO_GRB + NEO_KHZ800);     //
+Adafruit_NeoPixel desalDrain   = Adafruit_NeoPixel(7, 7, NEO_GRB + NEO_KHZ800);     // 
+Adafruit_NeoPixel recDrain     = Adafruit_NeoPixel(16, 13, NEO_GRB + NEO_KHZ800);     //
 //Expansion board 2 "drains"
-Adafruit_NeoPixel agroDrain    = Adafruit_NeoPixel(5, 5, NEO_GRB + NEO_KHZ800);     // 
-Adafruit_NeoPixel homeDrain    = Adafruit_NeoPixel(5, 4, NEO_GRB + NEO_KHZ800);     // 
-Adafruit_NeoPixel indDrain     = Adafruit_NeoPixel(5, 13, NEO_GRB + NEO_KHZ800);    // 
+Adafruit_NeoPixel agroDrain    = Adafruit_NeoPixel(15, 6, NEO_GRB + NEO_KHZ800);     // 
+Adafruit_NeoPixel homeDrain    = Adafruit_NeoPixel(9, 5, NEO_GRB + NEO_KHZ800);     // may have to piggy back this on something, like industry. could also try analog outputs.   
+Adafruit_NeoPixel indDrain     = Adafruit_NeoPixel(10 , A5, NEO_GRB + NEO_KHZ800);    // 
 
 
 // Define MCP expanders
@@ -37,13 +37,16 @@ boolean hold = false;
 void setup(){
 //Arduino Pin Defines
   Serial.begin(9600);
+  Wire.begin();
   pinMode(A0, OUTPUT);
   pinMode(A1, OUTPUT);
   pinMode(A2, OUTPUT);
   pinMode(A3, INPUT);
   pinMode(A4, INPUT);
+  pinMode(A5, OUTPUT);
 // Initialize all MCP Expanders
   expBoard0.begin(0);
+    delay(25);
     expBoard0.pinMode(8,  OUTPUT);    // GPB0
     expBoard0.pinMode(9,  OUTPUT);    // GPB1
     expBoard0.pinMode(10, OUTPUT);    // GPB2
@@ -54,6 +57,7 @@ void setup(){
     expBoard0.pinMode(15, OUTPUT);    // GPB7
     expBoard0.pinMode(7,  OUTPUT);    // GPA7
   expBoard1.begin(1);
+    delay(25);
     expBoard1.pinMode(8,  OUTPUT);    // GPB0
     expBoard1.pinMode(9,  OUTPUT);    // GPB1
     expBoard1.pinMode(10, OUTPUT);    // GPB2
@@ -64,6 +68,7 @@ void setup(){
     expBoard1.pinMode(15, OUTPUT);    // GPB7
     expBoard1.pinMode(7,  OUTPUT);    // GPA7
   expBoard2.begin(2);
+    delay(25);
     expBoard2.pinMode(8,  OUTPUT);    // GPB0
     expBoard2.pinMode(9,  OUTPUT);    // GPB1
     expBoard2.pinMode(10, OUTPUT);    // GPB2
@@ -94,6 +99,8 @@ void setup(){
   agroDrain.show();
   homeDrain.show();
   indDrain.show();
+  
+  delay (2500);
 }
 
 void loop() {
@@ -117,6 +124,8 @@ if (hold == false){
   switch (section){                 // Fill "Rain Water" box
     case 0:
       Serial.println ("Program running - Awaiting remote input");  
+      alloff;
+      hold = true;
       break;
     case 1: 
       fillRainWater (250);          // Call rain water filling state. Number indicates delay time passed into function to fill
@@ -149,39 +158,49 @@ if (hold == false){
       break;
       //
     case 6:
-      fillOUC (0, 0, 255 , 100, 5); // Drain Aquifer and Desalinization Plant, Fill OUC Treatment
+      fillOUC (0, 0, 255 , 100, 7); // Drain Aquifer and Desalinization Plant, Fill OUC Treatment
       hold = true;
       Serial.println("Desalinization and Aquifer Drained - OUC Filled");
       break;
       //
    case 7:
-      drainOUC (0, 0, 255 , 100, 5); // Drain OUC and Animate last pipes - filling final boxes set length to longest?
+      drainOUC (0, 0, 255 , 50 , 15); // Drain OUC and Animate last pipes - filling final boxes set length to longest?
       hold = true;
       Serial.println("OUC Drained, Pipes animated, Lower Boxes Filled");
       break;
       //
    case 8:
-      blinkAgro (100);   // Blink and blink rate
+      blinkAgro (200);   // Blink and blink rate
+      hold = true;
       break;                       
       //
    case 9:
-      blinkRec(100);   // Blink and blink rate
+      blinkRec(200);   // Blink and blink rate
+      hold = true;
       break;
       //
    case 10:
-      blinkIndustry(100);   // Blink and blink rate
+      blinkIndustry(200);   // Blink and blink rate
+      hold = true;
       break;
       //
    case 11:
-      blinkHome (100);
+      blinkHome (200);
+      hold = true;
       break;
       //
    case 12:
-     finale ();      // This goes to the last function, that turns EVERYTHING on, and sets the tubes a drippin. 
-      break;
+     finale (0, 0, 255 , 50 , 15);      // This goes to the last function, that turns EVERYTHING on, and sets the tubes a drippin. 
+     hold = true;
+     break;
       // 
+  case 13:
+     alloff;
+     hold = true;
+     section = 0;
+     break;
   default:
-      alloff();
+     alloff();
      delay (100);
     }
 }
@@ -229,36 +248,39 @@ void blinkAgro (int wait){
   boolean state = LOW;
   //
   for (int i = 0; i < 6; i++){
-    expBoard1.digitalWrite(8, state);       // blink for the agro box here - MCP 2
-    expBoard1.digitalWrite(9, state);    
-    expBoard1.digitalWrite(10, state);
+    expBoard2.digitalWrite(8, state);       // blink for the agro box here - MCP 2
+    expBoard2.digitalWrite(9, state);    
+    expBoard2.digitalWrite(10, state);
     state =   !state;
     delay(wait);
     }
+  hold = true;
   }
 
 void blinkRec (int wait){;
   boolean state = LOW;
   //
   for (int i = 0; i < 6; i++){
-    expBoard1.digitalWrite(11, state);       // blink for the agro box here - MCP 2
-    expBoard1.digitalWrite(12, state);    
-    expBoard1.digitalWrite(13, state);
+    expBoard2.digitalWrite(11, state);       // blink for the agro box here - MCP 2
+    expBoard2.digitalWrite(12, state);    
+    expBoard2.digitalWrite(13, state);
     state =   !state;
     delay(wait);
     }
- } 
+  hold = true;
+  } 
  
 void blinkIndustry (int wait){  
   boolean state = LOW;
   //
   for (int i = 0; i < 6; i++){
-    expBoard1.digitalWrite(14, state);       // blink for the agro box here - MCP 2
-    expBoard1.digitalWrite(15, state);    
-    expBoard1.digitalWrite(7, state);
+    expBoard2.digitalWrite(14, state);       // blink for the agro box here - MCP 2
+    expBoard2.digitalWrite(15, state);    
+    expBoard2.digitalWrite(7, state);
     state =   !state;
     delay(wait);
     }
+  hold = true;
   }
 
 void blinkHome (int wait){
@@ -271,6 +293,7 @@ void blinkHome (int wait){
     state =   !state;
     delay(wait);
     }
+  hold = true;
   }  
 
 
@@ -285,15 +308,15 @@ void drainToAquifer(int r, int g, int b, int wait, int nPixels) {
     for (n = 0; n < 2; n++){                                              
       for(i = 0; i <= nPixels; i++) {                              //Progresses the light down the strip, with a 3 segment trail
         rainDrain.setPixelColor(i, rainDrain.Color(r,g,b));         //Primary light/pixel
-        rainDrain.setPixelColor(i-1, rainDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        rainDrain.setPixelColor(i-2, rainDrain.Color(r,g,(b-200)));
-        rainDrain.setPixelColor(i-3, rainDrain.Color(r,g,(b-250))); 
-        rainDrain.setPixelColor(i-4, rainDrain.Color(0,0,0));
-        surfaceDrain.setPixelColor(i, surfaceDrain.Color(r,g,b));         //Primary light/pixel
-        surfaceDrain.setPixelColor(i-1, surfaceDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        surfaceDrain.setPixelColor(i-2, surfaceDrain.Color(r,g,(b-200)));
-        surfaceDrain.setPixelColor(i-3, surfaceDrain.Color(r,g,(b-250))); 
-        surfaceDrain.setPixelColor(i-4, surfaceDrain.Color(0,0,0));
+        rainDrain.setPixelColor(i - 1, rainDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        rainDrain.setPixelColor(i - 2, rainDrain.Color(r,g,(b-200)));
+        rainDrain.setPixelColor(i - 3, rainDrain.Color(r,g,(b-250))); 
+        rainDrain.setPixelColor(i - 4, rainDrain.Color(0,0,0));
+        surfaceDrain.setPixelColor(nPixels - i - 1, surfaceDrain.Color(r,g,b));         //Primary light/pixel
+        surfaceDrain.setPixelColor(nPixels - i, surfaceDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        surfaceDrain.setPixelColor(nPixels - i + 1, surfaceDrain.Color(r,g,(b-200)));
+        surfaceDrain.setPixelColor(nPixels - i + 2, surfaceDrain.Color(r,g,(b-250))); 
+        surfaceDrain.setPixelColor(nPixels - i + 3, surfaceDrain.Color(0,0,0));
         rainDrain.show();
         surfaceDrain.show();
 
@@ -306,11 +329,11 @@ void drainToAquifer(int r, int g, int b, int wait, int nPixels) {
         rainDrain.setPixelColor(i-2, (0));
         rainDrain.setPixelColor(i-3, (0)); 
         rainDrain.setPixelColor(i-4, (0));
-        surfaceDrain.setPixelColor(i, (0));         //Primary light/pixel
-        surfaceDrain.setPixelColor(i-1, (0)); //light fall off below - add more lines to make trail longer 
-        surfaceDrain.setPixelColor(i-2, (0));
-        surfaceDrain.setPixelColor(i-3, (0)); 
-        surfaceDrain.setPixelColor(i-4, (0));        
+        surfaceDrain.setPixelColor((nPixels - i - 1), (0));         //Primary light/pixel
+        surfaceDrain.setPixelColor((nPixels - i), (0)); //light fall off below - add more lines to make trail longer 
+        surfaceDrain.setPixelColor((nPixels - i + 1), (0));
+        surfaceDrain.setPixelColor((nPixels - i + 2), (0)); 
+        surfaceDrain.setPixelColor((nPixels - i + 3), (0));        
         rainDrain.show();
         surfaceDrain.show();
       delay(wait);
@@ -342,21 +365,21 @@ void drainOceans(int r, int g, int b, int wait, int nPixels) {
  for (int cycle = 0; cycle < 3; cycle++){                          // Run the whole cycle 3 times
     for (n = 0; n < 2; n++){                                       // Run the animation of the dripping twice on each cycle       
       for(i = 0; i <= nPixels; i++) {                              //Progresses the light down the strip, with a 3 segment trail
-        oceanDrain.setPixelColor(i, oceanDrain.Color(r,g,b));         //Primary light/pixel
-        oceanDrain.setPixelColor(i-1, oceanDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        oceanDrain.setPixelColor(i-2, oceanDrain.Color(r,g,(b-200)));
-        oceanDrain.setPixelColor(i-3, oceanDrain.Color(r,g,(b-250))); 
-        oceanDrain.setPixelColor(i-4, oceanDrain.Color(0,0,0));
+        oceanDrain.setPixelColor(nPixels - i -1, oceanDrain.Color(r,g,b));         //Primary light/pixel
+        oceanDrain.setPixelColor(nPixels - i, oceanDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        oceanDrain.setPixelColor(nPixels - i + 1, oceanDrain.Color(r,g,(b-200)));
+        oceanDrain.setPixelColor(nPixels - i + 2, oceanDrain.Color(r,g,(b-250))); 
+        oceanDrain.setPixelColor(nPixels - i + 3, oceanDrain.Color(0,0,0));
         oceanDrain.show();
       delay(wait);  
       }
     for(i = 0; i <= nPixels; i++) {     
       //Clear the lights
-        oceanDrain.setPixelColor(i, (0));         //Primary light/pixel
-        oceanDrain.setPixelColor(i-1, (0)); //light fall off below - add more lines to make trail longer 
-        oceanDrain.setPixelColor(i-2, (0));
-        oceanDrain.setPixelColor(i-3, (0)); 
-        oceanDrain.setPixelColor(i-4, (0));
+        oceanDrain.setPixelColor(nPixels - i - 1, (0));         //Primary light/pixel
+        oceanDrain.setPixelColor(nPixels - i, (0)); //light fall off below - add more lines to make trail longer 
+        oceanDrain.setPixelColor(nPixels - i + 1, (0));
+        oceanDrain.setPixelColor(nPixels - i + 2, (0)); 
+        oceanDrain.setPixelColor(nPixels - i + 3, (0));
         oceanDrain.show();
       delay(wait);
     }
@@ -384,11 +407,11 @@ void fillOUC(int r, int g, int b, int wait, int nPixels) {
         aquiDrain.setPixelColor(i-2, aquiDrain.Color(r,g,(b-200)));
         aquiDrain.setPixelColor(i-3, aquiDrain.Color(r,g,(b-250))); 
         aquiDrain.setPixelColor(i-4, aquiDrain.Color(0,0,0));
-        desalDrain.setPixelColor(i, desalDrain.Color(r,g,b));         //Primary light/pixel
-        desalDrain.setPixelColor(i-1, desalDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        desalDrain.setPixelColor(i-2, desalDrain.Color(r,g,(b-200)));
-        desalDrain.setPixelColor(i-3, desalDrain.Color(r,g,(b-250))); 
-        desalDrain.setPixelColor(i-4, desalDrain.Color(0,0,0));
+        desalDrain.setPixelColor(nPixels - i - 1, desalDrain.Color(r,g,b));         //Primary light/pixel
+        desalDrain.setPixelColor(nPixels - i , desalDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        desalDrain.setPixelColor(nPixels - i + 1, desalDrain.Color(r,g,(b-200)));
+        desalDrain.setPixelColor(nPixels - i + 2, desalDrain.Color(r,g,(b-250))); 
+        desalDrain.setPixelColor(nPixels - i + 3, desalDrain.Color(0,0,0));
         desalDrain.show();
         aquiDrain.show();
       delay(wait);  
@@ -400,11 +423,11 @@ void fillOUC(int r, int g, int b, int wait, int nPixels) {
         aquiDrain.setPixelColor(i-2, (0));
         aquiDrain.setPixelColor(i-3, (0)); 
         aquiDrain.setPixelColor(i-4, (0));
-        desalDrain.setPixelColor(i, (0));         //Primary light/pixel
-        desalDrain.setPixelColor(i-1, (0)); //light fall off below - add more lines to make trail longer 
-        desalDrain.setPixelColor(i-2, (0));
-        desalDrain.setPixelColor(i-3, (0)); 
-        desalDrain.setPixelColor(i-4, (0));
+        desalDrain.setPixelColor(nPixels - i -1 , (0));         //Primary light/pixel
+        desalDrain.setPixelColor(nPixels - i, (0)); //light fall off below - add more lines to make trail longer 
+        desalDrain.setPixelColor(nPixels - i + 1, (0));
+        desalDrain.setPixelColor(nPixels - i + 2, (0)); 
+        desalDrain.setPixelColor(nPixels - i + 3, (0));
         desalDrain.show();
         aquiDrain.show();
       delay(wait);
@@ -424,7 +447,7 @@ void fillOUC(int r, int g, int b, int wait, int nPixels) {
            break;
          case 2:
            expBoard0.digitalWrite(14, LOW);           // Bottom Row of aquifer tank to off
-           expBoard1.digitalWrite(17, HIGH);          // Turn on top row of OUC Plant
+           expBoard1.digitalWrite(7, HIGH);          // Turn on top row of OUC Plant
            break;
        }
    }
@@ -439,29 +462,29 @@ void drainOUC(int r, int g, int b, int wait, int nPixels) {
    // Write code here to "fill" the Desal tank and Drain the oceans
     for (n = 0; n < 2; n++){                                              
       for(i = 0; i <= nPixels; i++) {                              //Progresses the light down the strip, with a 3 segment trail
-        agroDrain.setPixelColor(i, agroDrain.Color(r,g,b));         //Primary light/pixel
-        agroDrain.setPixelColor(i-1, agroDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        agroDrain.setPixelColor(i-2, agroDrain.Color(r,g,(b-200)));
-        agroDrain.setPixelColor(i-3, agroDrain.Color(r,g,(b-250))); 
-        agroDrain.setPixelColor(i-4, agroDrain.Color(0,0,0));
+        agroDrain.setPixelColor(nPixels - i - 1, agroDrain.Color(r,g,b));         //Primary light/pixel
+        agroDrain.setPixelColor(nPixels - i, agroDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        agroDrain.setPixelColor(nPixels - i + 1, agroDrain.Color(r,g,(b-200)));
+        agroDrain.setPixelColor(nPixels - i + 2, agroDrain.Color(r,g,(b-250))); 
+        agroDrain.setPixelColor(nPixels - i + 3, agroDrain.Color(0,0,0));
  //     
-        homeDrain.setPixelColor(i, homeDrain.Color(r,g,b));         //Primary light/pixel
-        homeDrain.setPixelColor(i-1, homeDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        homeDrain.setPixelColor(i-2, homeDrain.Color(r,g,(b-200)));
-        homeDrain.setPixelColor(i-3, homeDrain.Color(r,g,(b-250))); 
-        homeDrain.setPixelColor(i-4, homeDrain.Color(0,0,0));   
+        homeDrain.setPixelColor(nPixels - i - 1, homeDrain.Color(r,g,b));         //Primary light/pixel
+        homeDrain.setPixelColor(nPixels - i, homeDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        homeDrain.setPixelColor(nPixels - i + 1, homeDrain.Color(r,g,(b-200)));
+        homeDrain.setPixelColor(nPixels - i + 2, homeDrain.Color(r,g,(b-250))); 
+        homeDrain.setPixelColor(nPixels - i + 3, homeDrain.Color(0,0,0));   
 //
-        indDrain.setPixelColor(i, indDrain.Color(r,g,b));         //Primary light/pixel
-        indDrain.setPixelColor(i-1, indDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        indDrain.setPixelColor(i-2, indDrain.Color(r,g,(b-200)));
-        indDrain.setPixelColor(i-3, indDrain.Color(r,g,(b-250))); 
-        indDrain.setPixelColor(i-4, indDrain.Color(0,0,0));   
-//       
-        recDrain.setPixelColor(i, recDrain.Color(r,g,b));         //Primary light/pixel
-        recDrain.setPixelColor(i-1, recDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
-        recDrain.setPixelColor(i-2, recDrain.Color(r,g,(b-200)));
-        recDrain.setPixelColor(i-3, recDrain.Color(r,g,(b-250))); 
-        recDrain.setPixelColor(i-4, recDrain.Color(0,0,0));   
+        indDrain.setPixelColor(i-5, indDrain.Color(r,g,b));         //Primary light/pixel
+        indDrain.setPixelColor(i-6, indDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        indDrain.setPixelColor(i-7, indDrain.Color(r,g,(b-200)));
+        indDrain.setPixelColor(i-8, indDrain.Color(r,g,(b-250))); 
+        indDrain.setPixelColor(i-9, indDrain.Color(0,0,0));   
+//     
+        recDrain.setPixelColor(i + 1, recDrain.Color(r,g,b));         //Primary light/pixel
+        recDrain.setPixelColor(i, recDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        recDrain.setPixelColor(i-1, recDrain.Color(r,g,(b-200)));
+        recDrain.setPixelColor(i-2, recDrain.Color(r,g,(b-250))); 
+        recDrain.setPixelColor(i-3, recDrain.Color(0,0,0));   
 //             
         agroDrain.show();
         homeDrain.show();
@@ -472,29 +495,29 @@ void drainOUC(int r, int g, int b, int wait, int nPixels) {
       }
     for(i = 0; i <= nPixels; i++) {     
       //Clear the lights
-        agroDrain.setPixelColor(i, (0));         //Primary light/pixel
-        agroDrain.setPixelColor(i-1, (0)); //light fall off below - add more lines to make trail longer 
-        agroDrain.setPixelColor(i-2, (0));
-        agroDrain.setPixelColor(i-3, (0)); 
-        agroDrain.setPixelColor(i-4, (0));
+        agroDrain.setPixelColor(nPixels - i - 1, (0));         //Primary light/pixel
+        agroDrain.setPixelColor(nPixels - i, (0)); //light fall off below - add more lines to make trail longer 
+        agroDrain.setPixelColor(nPixels - i + 1, (0));
+        agroDrain.setPixelColor(nPixels - i + 2, (0)); 
+        agroDrain.setPixelColor(nPixels - i + 3, (0));
 //
-        homeDrain.setPixelColor(i, (0));         //Primary light/pixel
-        homeDrain.setPixelColor(i-1, (0)); //light fall off below - add more lines to make trail longer 
-        homeDrain.setPixelColor(i-2, (0));
-        homeDrain.setPixelColor(i-3, (0)); 
-        homeDrain.setPixelColor(i-4, (0));
+        homeDrain.setPixelColor(nPixels - i - 1, (0));         //Primary light/pixel
+        homeDrain.setPixelColor(nPixels - i, (0)); //light fall off below - add more lines to make trail longer 
+        homeDrain.setPixelColor(nPixels - i + 1, (0));
+        homeDrain.setPixelColor(nPixels - i + 2, (0)); 
+        homeDrain.setPixelColor(nPixels - i + 3, (0));
 //
-        indDrain.setPixelColor(i, (0));         //Primary light/pixel
-        indDrain.setPixelColor(i-1, (0)); //light fall off below - add more lines to make trail longer 
-        indDrain.setPixelColor(i-2, (0));
-        indDrain.setPixelColor(i-3, (0)); 
-        indDrain.setPixelColor(i-4, (0));
-//
-        recDrain.setPixelColor(i, (0));         //Primary light/pixel
-        recDrain.setPixelColor(i-1, (0)); //light fall off below - add more lines to make trail longer 
-        recDrain.setPixelColor(i-2, (0));
-        recDrain.setPixelColor(i-3, (0)); 
-        recDrain.setPixelColor(i-4, (0));
+        indDrain.setPixelColor(i-5, (0));         //Primary light/pixel
+        indDrain.setPixelColor(i-6, (0)); //light fall off below - add more lines to make trail longer 
+        indDrain.setPixelColor(i-7, (0));
+        indDrain.setPixelColor(i-8, (0)); 
+        indDrain.setPixelColor(i-9, (0));
+// 
+        recDrain.setPixelColor(i + 1, (0));         //Primary light/pixel
+        recDrain.setPixelColor(i, (0)); //light fall off below - add more lines to make trail longer 
+        recDrain.setPixelColor(i - 1, (0));
+        recDrain.setPixelColor(i - 2, (0)); 
+        recDrain.setPixelColor(i - 3, (0));
 //
         agroDrain.show();
         homeDrain.show();
@@ -505,12 +528,12 @@ void drainOUC(int r, int g, int b, int wait, int nPixels) {
   }
  
      Serial.println(cycle);
-        expBoard1.digitalWrite(8 + (cycle), HIGH);     // fill for the agro box here - MCP 2
-        expBoard1.digitalWrite(11 + (cycle), HIGH);    // fill for the home box here - MCP 2
+        expBoard2.digitalWrite(8 + (cycle), HIGH);     // fill for the agro box here - MCP 2
+        expBoard2.digitalWrite(11 + (cycle), HIGH);    // fill for the home box here - MCP 2
        switch(cycle){                                  // monitor the cycle and turn on the appropraite lights to the industrial and Recreational tank. Out of order because of my poor hardware planning...
          case 0:
            expBoard2.digitalWrite(14, HIGH);           // Bottom Row of industrial tank
-           digitalWrite(A0, HIGH);                     // recreational tank
+           digitalWrite(A2, HIGH);                     // recreational tank
            Serial.println("case0");
            break;
          case 1:
@@ -519,13 +542,14 @@ void drainOUC(int r, int g, int b, int wait, int nPixels) {
            break;
          case 2:
            expBoard2.digitalWrite(7, HIGH);            //Top Row industrial tank
-           digitalWrite (A2, HIGH);                    // recreational tank
+           digitalWrite (A0, HIGH);                    // recreational tank
        }
   
   
  }
 }
-void finale() {
+void finale(int r, int g, int b, int wait, int nPixels) {
+int L;
   // Turn on all the tank lights
   for(int i = 0; i < 9; i++){ 
     expBoard0.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 0
@@ -536,19 +560,164 @@ void finale() {
     for(int i = 0; i < 9; i++){ 
     expBoard2.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 2
   }
+   for (int cycle = 0; cycle < 6; cycle++){
+   // Write code here to "fill" the Desal tank and Drain the oceans
+    for (int n = 0; n < 2; n++){                                              
+      for(L = 0; L <= nPixels; L++) {  
+        rainDrain.setPixelColor(L, rainDrain.Color(r,g,b));         //Primary light/pixel
+        rainDrain.setPixelColor(L - 1, rainDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        rainDrain.setPixelColor(L - 2, rainDrain.Color(r,g,(b-200)));
+        rainDrain.setPixelColor(L - 3, rainDrain.Color(r,g,(b-250))); 
+        rainDrain.setPixelColor(L - 4, rainDrain.Color(0,0,0));
+
+        surfaceDrain.setPixelColor(nPixels - L - 1, surfaceDrain.Color(r,g,b));         //Primary light/pixel
+        surfaceDrain.setPixelColor(nPixels - L, surfaceDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        surfaceDrain.setPixelColor(nPixels - L + 1, surfaceDrain.Color(r,g,(b-200)));
+        surfaceDrain.setPixelColor(nPixels - L + 2, surfaceDrain.Color(r,g,(b-250))); 
+        surfaceDrain.setPixelColor(nPixels - L + 3, surfaceDrain.Color(0,0,0));
+
+        oceanDrain.setPixelColor(nPixels - L -1, oceanDrain.Color(r,g,b));         //Primary light/pixel
+        oceanDrain.setPixelColor(nPixels - L, oceanDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        oceanDrain.setPixelColor(nPixels - L + 1, oceanDrain.Color(r,g,(b-200)));
+        oceanDrain.setPixelColor(nPixels - L + 2, oceanDrain.Color(r,g,(b-250))); 
+        oceanDrain.setPixelColor(nPixels - L + 3, oceanDrain.Color(0,0,0));
+
+        aquiDrain.setPixelColor(L, aquiDrain.Color(r,g,b));         //Primary light/pixel
+        aquiDrain.setPixelColor(L-1, aquiDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        aquiDrain.setPixelColor(L-2, aquiDrain.Color(r,g,(b-200)));
+        aquiDrain.setPixelColor(L-3, aquiDrain.Color(r,g,(b-250))); 
+        aquiDrain.setPixelColor(L-4, aquiDrain.Color(0,0,0));
+
+        desalDrain.setPixelColor(nPixels - L - 1, desalDrain.Color(r,g,b));         //Primary light/pixel
+        desalDrain.setPixelColor(nPixels - L , desalDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        desalDrain.setPixelColor(nPixels - L + 1, desalDrain.Color(r,g,(b-200)));
+        desalDrain.setPixelColor(nPixels - L + 2, desalDrain.Color(r,g,(b-250))); 
+        desalDrain.setPixelColor(nPixels - L + 3, desalDrain.Color(0,0,0));
+
+        agroDrain.setPixelColor(nPixels - L - 1, agroDrain.Color(r,g,b));         //Primary light/pixel
+        agroDrain.setPixelColor(nPixels - L, agroDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        agroDrain.setPixelColor(nPixels - L + 1, agroDrain.Color(r,g,(b-200)));
+        agroDrain.setPixelColor(nPixels - L + 2, agroDrain.Color(r,g,(b-250))); 
+        agroDrain.setPixelColor(nPixels - L + 3, agroDrain.Color(0,0,0));
+ //     
+        homeDrain.setPixelColor(nPixels - L - 1, homeDrain.Color(r,g,b));         //Primary light/pixel
+        homeDrain.setPixelColor(nPixels - L, homeDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        homeDrain.setPixelColor(nPixels - L + 1, homeDrain.Color(r,g,(b-200)));
+        homeDrain.setPixelColor(nPixels - L + 2, homeDrain.Color(r,g,(b-250))); 
+        homeDrain.setPixelColor(nPixels - L + 3, homeDrain.Color(0,0,0));   
+//
+        indDrain.setPixelColor(L-5, indDrain.Color(r,g,b));         //Primary light/pixel
+        indDrain.setPixelColor(L-6, indDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        indDrain.setPixelColor(L-7, indDrain.Color(r,g,(b-200)));
+        indDrain.setPixelColor(L-8, indDrain.Color(r,g,(b-250))); 
+        indDrain.setPixelColor(L-9, indDrain.Color(0,0,0));   
+//     
+        recDrain.setPixelColor(L + 1, recDrain.Color(r,g,b));         //Primary light/pixel
+        recDrain.setPixelColor(L, recDrain.Color(r,g,(b-150))); //light fall off below - add more lines to make trail longer 
+        recDrain.setPixelColor(L-1, recDrain.Color(r,g,(b-200)));
+        recDrain.setPixelColor(L-2, recDrain.Color(r,g,(b-250))); 
+        recDrain.setPixelColor(L-3, recDrain.Color(0,0,0));   
+//             
+        rainDrain.show();
+        surfaceDrain.show();
+        oceanDrain.show();
+        desalDrain.show();
+        aquiDrain.show();
+        agroDrain.show();
+        homeDrain.show();
+        indDrain.show();
+        recDrain.show();
+       
+      delay(wait);  
+      }
+    for(L = 0; L <= nPixels; L++) {     
+      //Clear the lights
+        rainDrain.setPixelColor(L, (0));         //Primary light/pixel
+        rainDrain.setPixelColor(L-1, (0)); //light fall off below - add more lines to make trail longer 
+        rainDrain.setPixelColor(L-2, (0));
+        rainDrain.setPixelColor(L-3, (0)); 
+        rainDrain.setPixelColor(L-4, (0));
+
+        surfaceDrain.setPixelColor((nPixels - L - 1), (0));         //Primary light/pixel
+        surfaceDrain.setPixelColor((nPixels - L), (0)); //light fall off below - add more lines to make trail longer 
+        surfaceDrain.setPixelColor((nPixels - L + 1), (0));
+        surfaceDrain.setPixelColor((nPixels - L + 2), (0)); 
+        surfaceDrain.setPixelColor((nPixels - L + 3), (0));        
+
+        aquiDrain.setPixelColor(L, (0));         //Primary light/pixel
+        aquiDrain.setPixelColor(L-1, (0)); //light fall off below - add more lines to make trail longer 
+        aquiDrain.setPixelColor(L-2, (0));
+        aquiDrain.setPixelColor(L-3, (0)); 
+        aquiDrain.setPixelColor(L-4, (0));
+
+        desalDrain.setPixelColor(nPixels - L -1 , (0));         //Primary light/pixel
+        desalDrain.setPixelColor(nPixels - L, (0)); //light fall off below - add more lines to make trail longer 
+        desalDrain.setPixelColor(nPixels - L + 1, (0));
+        desalDrain.setPixelColor(nPixels - L + 2, (0)); 
+        desalDrain.setPixelColor(nPixels - L + 3, (0));
+    
+        agroDrain.setPixelColor(nPixels - L - 1, (0));         //Primary light/pixel
+        agroDrain.setPixelColor(nPixels - L, (0)); //light fall off below - add more lines to make trail longer 
+        agroDrain.setPixelColor(nPixels - L + 1, (0));
+        agroDrain.setPixelColor(nPixels - L + 2, (0)); 
+        agroDrain.setPixelColor(nPixels - L + 3, (0));
+//
+        homeDrain.setPixelColor(nPixels - L - 1, (0));         //Primary light/pixel
+        homeDrain.setPixelColor(nPixels - L, (0)); //light fall off below - add more lines to make trail longer 
+        homeDrain.setPixelColor(nPixels - L + 1, (0));
+        homeDrain.setPixelColor(nPixels - L + 2, (0)); 
+        homeDrain.setPixelColor(nPixels - L + 3, (0));
+//
+        indDrain.setPixelColor(L-5, (0));         //Primary light/pixel
+        indDrain.setPixelColor(L-6, (0)); //light fall off below - add more lines to make trail longer 
+        indDrain.setPixelColor(L-7, (0));
+        indDrain.setPixelColor(L-8, (0)); 
+        indDrain.setPixelColor(L-9, (0));
+// 
+        recDrain.setPixelColor(L + 1, (0));         //Primary light/pixel
+        recDrain.setPixelColor(L, (0)); //light fall off below - add more lines to make trail longer 
+        recDrain.setPixelColor(L - 1, (0));
+        recDrain.setPixelColor(L - 2, (0)); 
+        recDrain.setPixelColor(L - 3, (0));
+//
+        oceanDrain.setPixelColor(nPixels - L - 1, (0));         //Primary light/pixel
+        oceanDrain.setPixelColor(nPixels - L, (0)); //light fall off below - add more lines to make trail longer 
+        oceanDrain.setPixelColor(nPixels - L + 1, (0));
+        oceanDrain.setPixelColor(nPixels - L + 2, (0)); 
+        oceanDrain.setPixelColor(nPixels - L + 3, (0));
+
+        rainDrain.show();
+        surfaceDrain.show();        
+        oceanDrain.show();
+        aquiDrain.show();
+        desalDrain.show();
+        agroDrain.show();
+        homeDrain.show();
+        indDrain.show();
+        recDrain.show();
+      delay(wait);
+  
+  
+  
+    }
+    }
+   }
  }
 
 void alloff (){
   // Turn off all the tank lights
   for(int i = 0; i < 9; i++){ 
-    expBoard0.digitalWrite(7 + i,  LOW); // Turn on all tank lights from expander board 0
+    expBoard0.digitalWrite(7 + i,  LOW); // Turn off all tank lights from expander board 0
   }
   for(int i = 0; i < 9; i++){ 
-    expBoard1.digitalWrite(7 + i,  LOW); // Turn on all tank lights from expander board 1
+    expBoard1.digitalWrite(7 + i,  LOW); // Turn off all tank lights from expander board 1
   }
     for(int i = 0; i < 9; i++){ 
-    expBoard2.digitalWrite(7 + i,  LOW); // Turn on all tank lights from expander board 2
+    expBoard2.digitalWrite(7 + i,  LOW); // Turn off all tank lights from expander board 2
   }
+    digitalWrite(A0, LOW);
+    digitalWrite(A1, LOW);
+    digitalWrite(A2, LOW);
  }
 
 
