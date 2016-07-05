@@ -20,9 +20,9 @@ Adafruit_NeoPixel oceanDrain   = Adafruit_NeoPixel(5, 8, NEO_GRB + NEO_KHZ800); 
 Adafruit_NeoPixel desalDrain   = Adafruit_NeoPixel(7, 7, NEO_GRB + NEO_KHZ800);     // 
 Adafruit_NeoPixel recDrain     = Adafruit_NeoPixel(16, 13, NEO_GRB + NEO_KHZ800);     //
 //Expansion board 2 "drains"
-Adafruit_NeoPixel agroDrain    = Adafruit_NeoPixel(15, 6, NEO_GRB + NEO_KHZ800);     // 
-Adafruit_NeoPixel homeDrain    = Adafruit_NeoPixel(9, 5, NEO_GRB + NEO_KHZ800);     // may have to piggy back this on something, like industry. could also try analog outputs.   
-Adafruit_NeoPixel indDrain     = Adafruit_NeoPixel(10 , A5, NEO_GRB + NEO_KHZ800);    // 
+Adafruit_NeoPixel agroDrain    = Adafruit_NeoPixel(15, 5, NEO_GRB + NEO_KHZ800);     // 
+Adafruit_NeoPixel homeDrain    = Adafruit_NeoPixel(9, A5, NEO_GRB + NEO_KHZ800);     // may have to piggy back this on something, like industry. could also try analog outputs.   
+Adafruit_NeoPixel indDrain     = Adafruit_NeoPixel(10 , 6, NEO_GRB + NEO_KHZ800);    // 
 
 
 // Define MCP expanders
@@ -56,6 +56,7 @@ void setup(){
     expBoard0.pinMode(14, OUTPUT);    // GPB6
     expBoard0.pinMode(15, OUTPUT);    // GPB7
     expBoard0.pinMode(7,  OUTPUT);    // GPA7
+    
   expBoard1.begin(1);
     delay(25);
     expBoard1.pinMode(8,  OUTPUT);    // GPB0
@@ -67,6 +68,7 @@ void setup(){
     expBoard1.pinMode(14, OUTPUT);    // GPB6
     expBoard1.pinMode(15, OUTPUT);    // GPB7
     expBoard1.pinMode(7,  OUTPUT);    // GPA7
+  
   expBoard2.begin(2);
     delay(25);
     expBoard2.pinMode(8,  OUTPUT);    // GPB0
@@ -78,7 +80,11 @@ void setup(){
     expBoard2.pinMode(14, OUTPUT);    // GPB6
     expBoard2.pinMode(15, OUTPUT);    // GPB7
     expBoard2.pinMode(7,  OUTPUT);    // GPA7
-
+    
+    expBoard0.writeGPIOAB(0x0000);
+    expBoard1.writeGPIOAB(0x0000);
+    expBoard2.writeGPIOAB(0x0000);
+    
 //Initialize all the strips
   rainDrain.begin();
   surfaceDrain.begin();
@@ -107,6 +113,7 @@ void loop() {
 // Set the remote inputs equal to 0, and check to see if the button has been pressed. 
 // If A is pressed, add to the section. If B is pressed, go back
 // Also sets / resets the hold variable to prevent show repeats
+
 boolean btnA = 0;
 boolean btnB = 0;
 btnA = digitalRead (A3);
@@ -124,7 +131,7 @@ if (hold == false){
   switch (section){                 // Fill "Rain Water" box
     case 0:
       Serial.println ("Program running - Awaiting remote input");  
-      alloff;
+      alloff();
       hold = true;
       break;
     case 1: 
@@ -195,7 +202,7 @@ if (hold == false){
      break;
       // 
   case 13:
-     alloff;
+     alloff();
      hold = true;
      section = 0;
      break;
@@ -209,10 +216,7 @@ if (hold == false){
 
 
 
-/* Random Bits
 
-  sect2 (0, 0, 255 , 100, 5);
-*/
 
 void fillRainWater (int wait){
     Serial.println("Filling Rain Water");
@@ -534,15 +538,18 @@ void drainOUC(int r, int g, int b, int wait, int nPixels) {
          case 0:
            expBoard2.digitalWrite(14, HIGH);           // Bottom Row of industrial tank
            digitalWrite(A2, HIGH);                     // recreational tank
+           expBoard1.digitalWrite(7, LOW);          // Turn off top row of OUC Plant
            Serial.println("case0");
            break;
          case 1:
            expBoard2.digitalWrite(15, HIGH);           //Middle Row industrial tank
            digitalWrite (A1, HIGH);                    // recreational tank
+           expBoard1.digitalWrite(15, LOW);          // Turn off middle row of OUC Plant
            break;
          case 2:
            expBoard2.digitalWrite(7, HIGH);            //Top Row industrial tank
            digitalWrite (A0, HIGH);                    // recreational tank
+           expBoard1.digitalWrite(14, LOW);          // Turn off bottom row of OUC Plant
        }
   
   
@@ -551,15 +558,11 @@ void drainOUC(int r, int g, int b, int wait, int nPixels) {
 void finale(int r, int g, int b, int wait, int nPixels) {
 int L;
   // Turn on all the tank lights
-  for(int i = 0; i < 9; i++){ 
-    expBoard0.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 0
-  }
-  for(int i = 0; i < 9; i++){ 
-    expBoard1.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 1
-  }
-    for(int i = 0; i < 9; i++){ 
-    expBoard2.digitalWrite(7 + i,  HIGH); // Turn on all tank lights from expander board 2
-  }
+    expBoard0.writeGPIOAB(0xFFFF);
+    expBoard1.writeGPIOAB(0xFFFF);
+    expBoard2.writeGPIOAB(0xFFFF);
+  
+  
    for (int cycle = 0; cycle < 6; cycle++){
    // Write code here to "fill" the Desal tank and Drain the oceans
     for (int n = 0; n < 2; n++){                                              
@@ -706,15 +709,10 @@ int L;
 
 void alloff (){
   // Turn off all the tank lights
-  for(int i = 0; i < 9; i++){ 
-    expBoard0.digitalWrite(7 + i,  LOW); // Turn off all tank lights from expander board 0
-  }
-  for(int i = 0; i < 9; i++){ 
-    expBoard1.digitalWrite(7 + i,  LOW); // Turn off all tank lights from expander board 1
-  }
-    for(int i = 0; i < 9; i++){ 
-    expBoard2.digitalWrite(7 + i,  LOW); // Turn off all tank lights from expander board 2
-  }
+    expBoard0.writeGPIOAB(0x0000);
+    expBoard1.writeGPIOAB(0x0000);
+    expBoard2.writeGPIOAB(0x0000);
+
     digitalWrite(A0, LOW);
     digitalWrite(A1, LOW);
     digitalWrite(A2, LOW);
